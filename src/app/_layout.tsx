@@ -5,7 +5,7 @@ import { useFonts } from "expo-font";
 import { Stack, usePathname } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { View } from "react-native";
+import { Image, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { BlurTargetView } from "expo-blur";
 
@@ -24,13 +24,32 @@ export default function RootLayout() {
       });
 
       useEffect(() => {
-            if (fontsLoaded) {
-                  SplashScreen.hideAsync();
-            }
-      }, [fontsLoaded]);
+            SplashScreen.hideAsync();
+      }, []);
 
       if (!fontsLoaded) {
-            return null;
+            return (
+                  <View
+                        style={{
+                              flex: 1,
+                              alignItems: "center",
+                              justifyContent: "center",
+                              backgroundColor: colors.background,
+                        }}
+                  >
+                        <Image source={require("@/assets/images/icon.png")} resizeMode="contain" style={{ width: 180, height: 180 }} />
+                        <Text
+                              style={{
+                                    marginTop: 24,
+                                    color: colors.text,
+                                    fontSize: 30,
+                                    fontWeight: "700",
+                              }}
+                        >
+                              MoviesFlix
+                        </Text>
+                  </View>
+            );
       }
 
       // Fullscreen media routes

@@ -1,10 +1,7 @@
-import { useCallback } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { X } from "lucide-react-native";
 import { WebView } from "react-native-webview";
-import * as ScreenOrientation from "expo-screen-orientation";
-
 import { colors } from "@/constants/theme";
 import { fonts } from "@/constants/fonts";
 

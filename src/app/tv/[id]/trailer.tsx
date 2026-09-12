@@ -1,8 +1,6 @@
-import { useCallback } from "react";
 import { Pressable, Text, View, useWindowDimensions } from "react-native";
-import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { X } from "lucide-react-native";
-import * as ScreenOrientation from "expo-screen-orientation";
 import YoutubePlayer from "react-native-youtube-iframe";
 
 import { useTvDetails } from "@/hooks/useTvDetails";
@@ -19,7 +17,7 @@ export default function TvTrailerScreen() {
       const trailer = data?.trailer;
 
       const playerWidth = width;
-      const playerHeight = width * (9 / 16);
+      const playerHeight = width * (16 / 4);
       const finalHeight = Math.min(playerHeight, height);
 
       return (

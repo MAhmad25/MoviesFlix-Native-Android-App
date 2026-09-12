@@ -1,10 +1,7 @@
-import { useCallback } from "react";
 import { Pressable, Text, View, useWindowDimensions } from "react-native";
-import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { X } from "lucide-react-native";
-import * as ScreenOrientation from "expo-screen-orientation";
 import YoutubePlayer from "react-native-youtube-iframe";
-import * as NavigationBar from "expo-navigation-bar";
 
 import { colors } from "@/constants/theme";
 import { fonts } from "@/constants/fonts";
