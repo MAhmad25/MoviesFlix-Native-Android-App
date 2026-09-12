@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "MoviesFlix",
+    "slug": "moviesflix-native",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "moviesflix",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#300b07",
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#300b07",
+        "foregroundImage": "./assets/images/icon.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#300b07",
+          "image": "./assets/images/icon.png",
+          "imageWidth": 120
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

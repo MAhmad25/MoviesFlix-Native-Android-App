@@ -1,0 +1,19 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+
+@import "nativewind/theme";
+
+@theme {
+  /* ==============================
+     MOVIESFLIX PALETTE
+     Ported from the web app's index.css
+  ============================== */
+  --color-flix-bg: #300b07;
+  --color-flix-bg-light: #45120c;
+  --color-flix-card: #0f0000;
+  --color-flix-accent: #ff7949;
+  --color-flix-rating: #fde047;
+  --color-flix-text: #fefefe;
+  --color-flix-muted: #d4d4d8;
+}
