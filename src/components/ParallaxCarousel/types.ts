@@ -16,6 +16,9 @@ export type ParallaxCarouselProps<ItemT extends ParallaxCarouselItem> = {
   parallaxIntensity?: number;
   pagingEnabled?: boolean;
   showHorizontalScrollIndicator?: boolean;
+  onIndexChange?: (index: number) => void;
+  onInteractionStart?: () => void;
+  onInteractionEnd?: () => void;
 };
 
 export interface ParallaxCarouselItemProps<ItemT extends ParallaxCarouselItem> {

@@ -1,35 +1,36 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { SoundPressable as Pressable } from "@/components/SoundPressable";
+import { StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
 import { X } from "lucide-react-native";
 import { WebView } from "react-native-webview";
 import { colors } from "@/constants/theme";
 import { fonts } from "@/constants/fonts";
+import { handleWebViewSound, webviewSoundScript } from "@/lib/webviewSounds";
 
-export default function StreamScreen() {
-      const { id, season, seasonID, category } = useLocalSearchParams<{
+export default function StreamScreen({ id, season, episode, type }: {
             id: string;
             season?: string;
-            seasonID?: string;
-            category?: string;
-      }>();
+            episode?: string;
+            type: "movie" | "tv";
+      }) {
 
       const router = useRouter();
 
       let url = "";
 
-      if (category === "tv") {
-            url = `https://cinemaos.tech/watch/tv/${id}?season=${season}&episode=${seasonID}`;
+      if (type === "tv") {
+            url = `https://cinemaos.tech/watch/tv/${id}?season=${season}&episode=${episode}`;
       } else {
             url = `https://cinemaos.tech/player/${id}`;
       }
 
       return (
             <View style={styles.container}>
-                  <Pressable onPress={() => router.back()} style={styles.closeButton}>
+                  <Pressable sound="navigate" soundDirection="back" onPress={() => router.back()} style={styles.closeButton}>
                         <X size={22} color="black" />
                   </Pressable>
 
-                  {url ? <WebView source={{ uri: url }} style={styles.webview} javaScriptEnabled domStorageEnabled allowsFullscreenVideo allowsInlineMediaPlayback mediaPlaybackRequiresUserAction={false} originWhitelist={["*"]} startInLoadingState /> : <Text style={styles.error}>Stream not found.</Text>}
+                  {url ? <WebView source={{ uri: url }} style={styles.webview} injectedJavaScript={webviewSoundScript} onMessage={handleWebViewSound} javaScriptEnabled domStorageEnabled allowsFullscreenVideo allowsInlineMediaPlayback mediaPlaybackRequiresUserAction={false} originWhitelist={["*"]} startInLoadingState /> : <Text style={styles.error}>Stream not found.</Text>}
             </View>
       );
 }

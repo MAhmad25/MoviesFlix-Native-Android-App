@@ -1,4 +1,5 @@
-import { Pressable, Text, View } from "react-native";
+import { SoundPressable as Pressable } from "@/components/SoundPressable";
+import { Text, View } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -25,7 +26,7 @@ export default function Card({ item, type = "movie", width = 150, fluid = false 
       const resolvedType = mediaType(item, type);
 
       return (
-            <Pressable onPress={() => router.push(`/${resolvedType}/${item.id}` as any)} style={fluid ? { flex: 1 } : { width }} className="shrink-0 overflow-hidden rounded-xl">
+            <Pressable sound="navigate" onPress={() => router.push(`/${resolvedType}/${item.id}` as any)} style={fluid ? { flex: 1 } : { width }} className="shrink-0 overflow-hidden rounded-xl">
                   <View style={{ backgroundColor: colors.card }} className="overflow-hidden rounded-xl">
                         <View className="relative h-40 w-full sm:h-56">
                               <Image source={src ?? require("@/assets/images/no-image.jpg")} style={{ width: "100%", height: "100%" }} contentFit="cover" transition={150} />

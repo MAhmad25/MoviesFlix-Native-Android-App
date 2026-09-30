@@ -1,6 +1,7 @@
+import { SoundPressable as Pressable } from "@/components/SoundPressable";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Image } from "expo-image";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { ArrowLeft } from "lucide-react-native";
 import { StarIcon } from "@/components/icons/StarIcon";
 import { PeopleDetailLoader } from "@/components/loaders/PeopleDetailLoader";
@@ -24,7 +25,7 @@ export default function PersonDetailsScreen() {
 
       return (
             <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={{ paddingBottom: 100, paddingTop: 56 }}>
-                  <Pressable onPress={() => router.back()} className="absolute left-5 top-14 z-10 rounded-full bg-white/30 p-2">
+                  <Pressable sound="navigate" soundDirection="back" onPress={() => router.back()} className="absolute left-5 top-14 z-10 rounded-full bg-white/30 p-2">
                         <ArrowLeft size={18} color="black" />
                   </Pressable>
                   <View className="items-center gap-2 px-4">

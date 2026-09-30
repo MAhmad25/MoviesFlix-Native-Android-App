@@ -1,0 +1,6 @@
+{
+  "$schema": "https://reacticx.com/schema/component.config.json",
+  "outDir": "src/components/ui",
+  "aliases": { "components": "@/components/ui" },
+  "packageManager": "npm"
+}

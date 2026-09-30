@@ -22,7 +22,7 @@ export default function MoviesScreen() {
       renderItem={({ item }) => <Card item={item} type="movie" fluid />}
       onEndReachedThreshold={0.5}
       onEndReached={loadMore}
-      ListFooterComponent={loading ? <CastLoader /> : null}
+      ListFooterComponent={loading ? <CastLoader variant="footer" /> : null}
     />
   );
 }

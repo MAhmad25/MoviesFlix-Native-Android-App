@@ -1,9 +1,11 @@
+import { SoundPressable as Pressable } from "@/components/SoundPressable";
 import { useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { Pressable, ScrollView, Text, View } from "react-native";
-import { Play, X } from "lucide-react-native";
+import { ScrollView, Text, View } from "react-native";
+import { X } from "lucide-react-native";
+import { MediaActionButton } from "@/components/MediaActionButton";
 import Card from "@/components/Card";
 import CastChip from "@/components/CastChip";
 import { StarIcon } from "@/components/icons/StarIcon";
@@ -28,11 +30,12 @@ export default function TvDetailsScreen() {
 
       const { detail, cast, recommended, reviews } = data;
       const backdrop = tmdbImage(detail.backdrop_path, "original");
+      const firstSeason = detail.seasons?.find((season) => season.season_number > 0 && season.episode_count > 0);
 
       return (
             <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={{ paddingBottom: 100 }}>
                   <SeasonModal season={selectedSeason} tvId={id} onClose={() => setSelectedSeason(null)} />
-                  <Pressable onPress={() => router.back()} className="absolute right-5 top-14 z-10 rounded-full bg-white/30 p-2">
+                  <Pressable sound="navigate" soundDirection="back" onPress={() => router.back()} className="absolute right-5 top-14 z-10 rounded-full bg-white/30 p-2">
                         <X size={18} color="black" />
                   </Pressable>
                   <View className="h-96 w-full">
@@ -68,10 +71,11 @@ export default function TvDetailsScreen() {
                                           </Text>
                                     </Text>
                               </View>
-                              <Pressable onPress={() => router.push(`/tv/${id}/trailer` as any)} className="flex-row items-center gap-1.5">
-                                    <Play size={20} color={colors.text} fill={colors.text} />
-                                    <Text style={{ color: colors.text, fontFamily: fonts.body }}>Trailer</Text>
-                              </Pressable>
+                        </View>
+                        <View style={{ flexDirection: "row", gap: 10, marginTop: 8 }}>
+                              <MediaActionButton action="watch" sound="open" disabled={!firstSeason} onPress={() => setSelectedSeason(firstSeason ?? null)} />
+                              <MediaActionButton action="trailer" sound="navigate" onPress={() => router.push(`/tv/${id}/trailer` as any)} />
+                              <MediaActionButton action="download" sound="open" disabled={!firstSeason} onPress={() => setSelectedSeason(firstSeason ?? null)} />
                         </View>
 
                         <View className="mt-3 gap-1 border-t py-3" style={{ borderColor: colors.muted }}>

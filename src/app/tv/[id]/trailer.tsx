@@ -1,4 +1,5 @@
-import { Pressable, Text, View, useWindowDimensions } from "react-native";
+import { SoundPressable as Pressable } from "@/components/SoundPressable";
+import { Text, View, useWindowDimensions } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { X } from "lucide-react-native";
 import YoutubePlayer from "react-native-youtube-iframe";
@@ -30,6 +31,8 @@ export default function TvTrailerScreen() {
                   }}
             >
                   <Pressable
+                        sound="navigate"
+                        soundDirection="back"
                         onPress={() => router.back()}
                         style={{
                               position: "absolute",

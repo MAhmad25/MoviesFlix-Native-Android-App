@@ -25,7 +25,7 @@ export default function PeopleScreen() {
         renderItem={({ item }) => <Card item={item} type="person" fluid />}
         onEndReachedThreshold={0.5}
         onEndReached={loadMore}
-        ListFooterComponent={loading ? <CastLoader /> : null}
+        ListFooterComponent={loading ? <CastLoader variant="footer" /> : null}
       />
     </View>
   );

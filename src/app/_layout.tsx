@@ -1,21 +1,21 @@
 import "../../global.css";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useFonts } from "expo-font";
 import { Stack, usePathname } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { Image, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { BlurTargetView } from "expo-blur";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import NavBar from "@/components/NavBar";
 import { colors } from "@/constants/theme";
+import { SoundProvider } from "@/components/SoundProvider";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-      const blurTargetRef = useRef<View | null>(null);
       const pathname = usePathname();
 
       const [fontsLoaded] = useFonts({
@@ -37,6 +37,7 @@ export default function RootLayout() {
                               backgroundColor: colors.background,
                         }}
                   >
+                        <StatusBar hidden />
                         <Image source={require("@/assets/images/icon.png")} resizeMode="contain" style={{ width: 180, height: 180 }} />
                         <Text
                               style={{
@@ -54,83 +55,88 @@ export default function RootLayout() {
 
       // Fullscreen media routes
       const isMediaScreen = pathname.includes("/trailer") || pathname.includes("/watch");
+      const isDownloadScreen = pathname.includes("/download");
 
       return (
             <SafeAreaProvider>
-                  <View
-                        style={{
-                              flex: 1,
-                              backgroundColor: colors.background,
-                        }}
-                  >
-                        <StatusBar style="light" hidden={isMediaScreen} />
+                  <SoundProvider>
+                        <GestureHandlerRootView
+                              style={{
+                                    flex: 1,
+                                    backgroundColor: colors.background,
+                              }}
+                        >
+                              <StatusBar hidden />
 
-                        <BlurTargetView ref={blurTargetRef} style={{ flex: 1 }}>
-                              <Stack
-                                    screenOptions={{
-                                          headerShown: false,
-                                          statusBarHidden: true,
-                                          contentStyle: {
-                                                backgroundColor: colors.background,
-                                          },
-                                    }}
-                              >
-                                    <Stack.Screen name="index" />
-                                    <Stack.Screen name="movies" />
-                                    <Stack.Screen name="tv" />
-                                    <Stack.Screen name="people" />
-                                    <Stack.Screen name="search" />
-
-                                    <Stack.Screen name="movie/[id]/index" />
-
-                                    <Stack.Screen
-                                          name="movie/[id]/trailer"
-                                          options={{
-                                                presentation: "fullScreenModal",
-                                                orientation: "landscape",
-                                                navigationBarHidden: true,
+                              <View style={{ flex: 1 }}>
+                                    <Stack
+                                          screenOptions={{
+                                                headerShown: false,
                                                 statusBarHidden: true,
+                                                contentStyle: {
+                                                      backgroundColor: colors.background,
+                                                },
                                           }}
-                                    />
+                                    >
+                                          <Stack.Screen name="index" />
+                                          <Stack.Screen name="movies" />
+                                          <Stack.Screen name="tv" />
+                                          <Stack.Screen name="people" />
+                                          <Stack.Screen name="search" />
 
-                                    <Stack.Screen
-                                          name="movie/[id]/watch"
-                                          options={{
-                                                presentation: "fullScreenModal",
-                                                orientation: "landscape",
-                                                navigationBarHidden: true,
-                                                statusBarHidden: true,
-                                          }}
-                                    />
+                                          <Stack.Screen name="movie/[id]/index" />
+                                          <Stack.Screen name="movie/[id]/download" />
 
-                                    <Stack.Screen name="tv/[id]/index" />
+                                          <Stack.Screen
+                                                name="movie/[id]/trailer"
+                                                options={{
+                                                      presentation: "fullScreenModal",
+                                                      orientation: "landscape",
+                                                      navigationBarHidden: true,
+                                                      statusBarHidden: true,
+                                                }}
+                                          />
 
-                                    <Stack.Screen
-                                          name="tv/[id]/trailer"
-                                          options={{
-                                                presentation: "fullScreenModal",
-                                                orientation: "landscape",
-                                                navigationBarHidden: true,
-                                                statusBarHidden: true,
-                                          }}
-                                    />
+                                          <Stack.Screen
+                                                name="movie/[id]/watch"
+                                                options={{
+                                                      presentation: "fullScreenModal",
+                                                      orientation: "landscape",
+                                                      navigationBarHidden: true,
+                                                      statusBarHidden: true,
+                                                }}
+                                          />
 
-                                    <Stack.Screen
-                                          name="tv/[id]/watch/[season]/[episode]"
-                                          options={{
-                                                presentation: "fullScreenModal",
-                                                orientation: "landscape",
-                                                navigationBarHidden: true,
-                                                statusBarHidden: true,
-                                          }}
-                                    />
+                                          <Stack.Screen name="tv/[id]/index" />
+                                          <Stack.Screen name="tv/[id]/download/[season]/[episode]" />
 
-                                    <Stack.Screen name="person/[id]" />
-                              </Stack>
-                        </BlurTargetView>
+                                          <Stack.Screen
+                                                name="tv/[id]/trailer"
+                                                options={{
+                                                      presentation: "fullScreenModal",
+                                                      orientation: "landscape",
+                                                      navigationBarHidden: true,
+                                                      statusBarHidden: true,
+                                                }}
+                                          />
 
-                        {!isMediaScreen && <NavBar blurTarget={blurTargetRef} />}
-                  </View>
+                                          <Stack.Screen
+                                                name="tv/[id]/watch/[season]/[episode]"
+                                                options={{
+                                                      presentation: "fullScreenModal",
+                                                      orientation: "landscape",
+                                                      navigationBarHidden: true,
+                                                      statusBarHidden: true,
+                                                }}
+                                          />
+
+                                          <Stack.Screen name="person/[id]" />
+                                    </Stack>
+                              </View>
+
+                              {!isMediaScreen && !isDownloadScreen && <NavBar />}
+                        </GestureHandlerRootView>
+                  </SoundProvider>
             </SafeAreaProvider>
       );
 }

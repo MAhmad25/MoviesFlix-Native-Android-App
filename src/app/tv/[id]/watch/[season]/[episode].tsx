@@ -1,8 +1,8 @@
 import { useLocalSearchParams } from "expo-router";
 import StreamPlaceholder from "@/components/StreamPlaceholder";
 
-/** Ports Components/pages/Stream.jsx for TV episodes — see StreamPlaceholder.tsx for why this is a placeholder. */
+/** Passes the selected season and episode to the existing TV player source. */
 export default function TvWatchScreen() {
-  const { season, episode } = useLocalSearchParams<{ id: string; season: string; episode: string }>();
-  return <StreamPlaceholder title={`Watch S${season}E${episode}`} />;
+      const { id, season, episode } = useLocalSearchParams<{ id: string; season: string; episode: string }>();
+      return <StreamPlaceholder type="tv" id={id} season={season} episode={episode} />;
 }

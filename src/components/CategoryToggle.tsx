@@ -1,5 +1,6 @@
+import { SoundPressable as Pressable } from "@/components/SoundPressable";
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { ChevronDown, ChevronUp } from "lucide-react-native";
 import { colors } from "@/constants/theme";
 import { fonts } from "@/constants/fonts";
@@ -22,7 +23,7 @@ export default function CategoryToggle({ options, value, onChange }: CategoryTog
 
   return (
     <View className="relative">
-      <Pressable onPress={() => setOpen((o) => !o)} className="flex-row items-center gap-1.5 rounded-md border px-3 py-2" style={{ borderColor: colors.muted }}>
+      <Pressable sound={open ? "close" : "open"} onPress={() => setOpen((o) => !o)} className="flex-row items-center gap-1.5 rounded-md border px-3 py-2" style={{ borderColor: colors.muted }}>
         <Text style={{ color: colors.text, fontFamily: fonts.body }}>{current?.label ?? value}</Text>
         {open ? <ChevronUp size={16} color={colors.text} /> : <ChevronDown size={16} color={colors.text} />}
       </Pressable>
@@ -30,7 +31,7 @@ export default function CategoryToggle({ options, value, onChange }: CategoryTog
         <View className="absolute right-0 top-[110%] z-50 min-w-[160px] overflow-hidden rounded-md border" style={{ borderColor: colors.muted, backgroundColor: colors.card }}>
           {options.map((option) => (
             <Pressable
-              key={option.value}
+              key={option.value} sound="select"
               onPress={() => {
                 onChange(option.value);
                 setOpen(false);

@@ -21,7 +21,7 @@ import type {
   ParallaxCarouselRef,
 } from "./types";
 import { scheduleOnRN } from "react-native-worklets";
-import { impactAsync, ImpactFeedbackStyle } from "expo-haptics";
+import { playSound } from "@/lib/interactionSounds";
 
 const { width, height } = Dimensions.get("window");
 
@@ -99,11 +99,24 @@ function ParallaxCarouselInner<ItemT extends ParallaxCarouselItem>(
     parallaxIntensity = 0.7,
     pagingEnabled = true,
     showHorizontalScrollIndicator = false,
+    onIndexChange,
+    onInteractionStart,
+    onInteractionEnd,
   }: ParallaxCarouselProps<ItemT>,
   ref: React.Ref<ParallaxCarouselRef>,
 ) {
   const scrollX = useSharedValue(0);
   const listRef = useRef<Animated.FlatList<ItemT>>(null);
+  const reportPosition = useCallback((offset: number) => {
+    const index = Math.max(0, Math.min(data.length - 1, Math.round(offset / itemWidth)));
+    onIndexChange?.(index);
+    onInteractionEnd?.();
+  }, [data.length, itemWidth, onIndexChange, onInteractionEnd]);
+  const beginInteraction = useCallback(() => onInteractionStart?.(), [onInteractionStart]);
+  const beginDrag = useCallback(() => {
+    playSound("select");
+    beginInteraction();
+  }, [beginInteraction]);
 
   useImperativeHandle(
     ref,
@@ -119,8 +132,17 @@ function ParallaxCarouselInner<ItemT extends ParallaxCarouselItem>(
     onScroll: (event) => {
       scrollX.value = event.contentOffset.x;
     },
-    onEndDrag: () => {
-      scheduleOnRN(impactAsync, ImpactFeedbackStyle.Rigid);
+    onBeginDrag: () => {
+      scheduleOnRN(beginDrag);
+    },
+    onEndDrag: (event) => {
+      scheduleOnRN(reportPosition, event.contentOffset.x);
+    },
+    onMomentumBegin: () => {
+      scheduleOnRN(beginInteraction);
+    },
+    onMomentumEnd: (event) => {
+      scheduleOnRN(reportPosition, event.contentOffset.x);
     },
   });
 
@@ -187,6 +209,9 @@ function ParallaxCarouselInner<ItemT extends ParallaxCarouselItem>(
         horizontal
         showsHorizontalScrollIndicator={showHorizontalScrollIndicator}
         onScroll={onScroll}
+        onTouchStart={beginInteraction}
+        onTouchEnd={onInteractionEnd}
+        onTouchCancel={onInteractionEnd}
         style={styles.list}
         scrollEventThrottle={16}
         getItemLayout={getItemLayout}
@@ -204,8 +229,8 @@ function ParallaxCarouselInner<ItemT extends ParallaxCarouselItem>(
 }
 
 /**
- * A paging carousel with a subtle image-parallax effect and a haptic tap on
- * release. Forwards a ref exposing `scrollToIndex` so a parent (e.g. an
+ * A paging carousel with an image-parallax effect and settled-position callbacks.
+ * Forwards a ref exposing `scrollToIndex` so a parent (e.g. an
  * autoplaying hero) can drive paging without reaching into the FlatList.
  */
 const ParallaxCarousel = forwardRef(ParallaxCarouselInner) as <

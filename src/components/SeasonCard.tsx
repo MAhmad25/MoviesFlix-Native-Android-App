@@ -1,4 +1,5 @@
-import { Pressable, Text, View } from "react-native";
+import { SoundPressable as Pressable } from "@/components/SoundPressable";
+import { Text, View } from "react-native";
 import { Image } from "expo-image";
 import { colors } from "@/constants/theme";
 import { tmdbImage } from "@/lib/tmdb";
@@ -9,7 +10,7 @@ export default function SeasonCard({ season, onPress }: { season: SeasonItem; on
       const src = tmdbImage(season.poster_path, "w500");
 
       return (
-            <Pressable onPress={onPress} className="h-64 w-40 shrink-0 gap-1.5">
+            <Pressable sound="open" onPress={onPress} className="h-64 w-40 shrink-0 gap-1.5">
                   <View className="h-[85%] w-full overflow-hidden rounded-md" style={{ backgroundColor: colors.card }}>
                         <Image source={src ?? require("@/assets/images/no-image.jpg")} style={{ width: "100%", height: "100%" }} contentFit="cover" transition={150} />
                   </View>

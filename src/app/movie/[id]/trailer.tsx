@@ -1,4 +1,5 @@
-import { Pressable, Text, View, useWindowDimensions } from "react-native";
+import { SoundPressable as Pressable } from "@/components/SoundPressable";
+import { Text, View, useWindowDimensions } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { X } from "lucide-react-native";
 import YoutubePlayer from "react-native-youtube-iframe";
@@ -6,6 +7,7 @@ import YoutubePlayer from "react-native-youtube-iframe";
 import { colors } from "@/constants/theme";
 import { fonts } from "@/constants/fonts";
 import { useMovieDetails } from "@/hooks/useMovieDetails";
+import { Shimmer } from "@/components/Shimmer";
 
 export default function MovieTrailerScreen() {
       const { id } = useLocalSearchParams<{ id: string }>();
@@ -13,7 +15,7 @@ export default function MovieTrailerScreen() {
 
       const { width, height } = useWindowDimensions();
 
-      const { data } = useMovieDetails(id);
+      const { data, loading } = useMovieDetails(id);
       const trailer = data?.trailer;
       /*
        * 16:9 YouTube player
@@ -37,7 +39,7 @@ export default function MovieTrailerScreen() {
                   }}
             >
                   <Pressable
-                        onPress={() => router.back()}
+                        sound="navigate" soundDirection="back" onPress={() => router.back()}
                         style={{
                               position: "absolute",
                               right: 16,
@@ -51,7 +53,9 @@ export default function MovieTrailerScreen() {
                         <X size={18} color="black" />
                   </Pressable>
 
-                  {trailer ? (
+                  {loading ? (
+                        <Shimmer style={{ width: playerWidth, height: finalHeight }} />
+                  ) : trailer ? (
                         <YoutubePlayer
                               width={playerWidth}
                               height={finalHeight}

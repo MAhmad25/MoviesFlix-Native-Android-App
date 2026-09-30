@@ -1,4 +1,5 @@
-import { Pressable, Text, View } from "react-native";
+import { SoundPressable as Pressable } from "@/components/SoundPressable";
+import { Text, View } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { colors } from "@/constants/theme";
@@ -14,7 +15,7 @@ export default function CastChip({ member }: { member: CastMember }) {
       const role = (member.character || member.job || "").slice(0, 18);
 
       return (
-            <Pressable onPress={() => router.push(`/person/${member.id}` as any)} className="w-24 shrink-0 items-center">
+            <Pressable sound="navigate" onPress={() => router.push(`/person/${member.id}` as any)} className="w-24 shrink-0 items-center">
                   <View className="h-24 w-24 overflow-hidden rounded-full" style={{ backgroundColor: colors.card }}>
                         <Image source={src ?? require("@/assets/images/no-image.jpg")} style={{ width: "100%", height: "100%" }} contentFit="cover" transition={150} />
                   </View>

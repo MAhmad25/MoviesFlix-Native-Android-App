@@ -4,11 +4,12 @@ import { colors } from "@/constants/theme";
 import { useTmdbList } from "@/hooks/useTmdbList";
 import CategoryToggle from "./CategoryToggle";
 import Slider from "./Slider";
+import { CastLoader } from "./loaders/CastLoader";
 
 /** Ports ui/TrendingContainer.jsx — the Home screen's "Trending Now" row with a movie/TV toggle. */
 export default function TrendingSection() {
   const [query, setQuery] = useState<"tv" | "movie">("tv");
-  const { data } = useTmdbList(`trending/${query}/day`);
+  const { data, loading } = useTmdbList(`trending/${query}/day`);
 
   return (
     <View className="w-full px-4">
@@ -25,7 +26,7 @@ export default function TrendingSection() {
           onChange={(v) => setQuery(v as "tv" | "movie")}
         />
       </View>
-      <Slider data={data} type={query} />
+      {loading ? <CastLoader /> : <Slider data={data} type={query} />}
     </View>
   );
 }

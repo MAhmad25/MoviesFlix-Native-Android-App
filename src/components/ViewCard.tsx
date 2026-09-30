@@ -1,4 +1,5 @@
-import { Pressable, Text, View } from "react-native";
+import { SoundPressable as Pressable } from "@/components/SoundPressable";
+import { Text, View } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { colors } from "@/constants/theme";
@@ -14,7 +15,7 @@ export default function ViewCard({ item, type = "movie" }: { item: MediaItem; ty
       const src = tmdbImage(item.backdrop_path || item.poster_path, "w500");
 
       return (
-            <Pressable onPress={() => router.push(`/${resolvedType}/${item.id}` as any)} className="h-56 w-40 shrink-0">
+            <Pressable sound="navigate" onPress={() => router.push(`/${resolvedType}/${item.id}` as any)} className="h-56 w-40 shrink-0">
                   <View className="h-3/4 w-full overflow-hidden rounded-lg" style={{ backgroundColor: colors.card }}>
                         <Image source={src ?? require("@/assets/images/no-image.jpg")} style={{ width: "100%", height: "100%" }} contentFit="cover" transition={150} />
                   </View>
