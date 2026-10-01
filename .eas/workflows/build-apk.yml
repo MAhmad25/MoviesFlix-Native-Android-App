@@ -1,0 +1,14 @@
+name: Build Internal APK
+
+on:
+      push:
+            branches:
+                  - master
+
+jobs:
+      build_android:
+            name: Build Android APK
+            type: build
+            params:
+                  platform: android
+                  profile: preview

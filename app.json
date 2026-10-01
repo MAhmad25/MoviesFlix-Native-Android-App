@@ -1,62 +1,64 @@
 {
-      "expo": {
-            "name": "MoviesFlix",
-            "slug": "moviesflix-native",
-            "version": "1.0.0",
-            "orientation": "portrait",
-            "icon": "./assets/images/icon.png",
-            "scheme": "moviesflix",
-            "userInterfaceStyle": "dark",
-            "backgroundColor": "#300b07",
-            "android": {
-                  "adaptiveIcon": {
-                        "backgroundColor": "#300b07",
-                        "foregroundImage": "./assets/images/icon.png"
-                  },
-                  "predictiveBackGestureEnabled": false,
-                  "package": "com.ahmad123dev.moviesflixnative"
-            },
-            "ios": {
-                  "supportsTablet": true,
-                  "infoPlist": {
-                        "UIStatusBarHidden": true
-                  }
-            },
-            "androidStatusBar": {
-                  "hidden": true
-            },
-            "web": {
-                  "output": "static",
-                  "favicon": "./assets/images/icon.png"
-            },
-            "plugins": [
-                  "expo-router",
-                  [
-                        "expo-splash-screen",
-                        {
-                              "backgroundColor": "#300b07",
-                              "image": "./assets/images/icon.png",
-                              "imageWidth": 180
-                        }
-                  ],
-                  [
-                        "expo-audio",
-                        {
-                              "microphonePermission": false,
-                              "recordAudioAndroid": false,
-                              "enableBackgroundPlayback": false,
-                              "enableBackgroundRecording": false
-                        }
-                  ]
-            ],
-            "experiments": {
-                  "typedRoutes": true
-            },
-            "extra": {
-                  "router": {},
-                  "eas": {
-                        "projectId": "21887552-2feb-4411-b68d-7c03878ccacc"
-                  }
-            }
+  "expo": {
+    "name": "MoviesFlix",
+    "slug": "moviesflix-native",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "moviesflix",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#300b07",
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#300b07",
+        "foregroundImage": "./assets/images/icon.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.ahmad123dev.moviesflixnative"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "UIStatusBarHidden": true
       }
+    },
+    "androidStatusBar": {
+      "hidden": true
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#300b07",
+          "image": "./assets/images/icon.png",
+          "imageWidth": 180
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "enableBackgroundPlayback": false,
+          "enableBackgroundRecording": false
+        }
+      ],
+      "expo-image",
+      "expo-asset"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "21887552-2feb-4411-b68d-7c03878ccacc"
+      }
+    }
+  }
 }
