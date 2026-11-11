@@ -2,13 +2,17 @@
   "expo": {
     "name": "MoviesFlix",
     "slug": "moviesflix-native",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "moviesflix",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#300b07",
     "android": {
+      "versionCode": 2,
+      "permissions": [
+        "android.permission.REQUEST_INSTALL_PACKAGES"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#300b07",
         "foregroundImage": "./assets/images/icon.png"
@@ -55,6 +59,7 @@
       "typedRoutes": true
     },
     "extra": {
+      "githubRepo": "MAhmad25/TheMoviesFlix-Streaming-Platform",
       "router": {},
       "eas": {
         "projectId": "21887552-2feb-4411-b68d-7c03878ccacc"
@@ -62,3 +67,4 @@
     }
   }
 }
+
