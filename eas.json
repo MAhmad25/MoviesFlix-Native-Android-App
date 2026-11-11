@@ -12,7 +12,7 @@
     },
     "production": {
       "environment": "production",
-      "autoIncrement": "versionCode",
+      "autoIncrement": true,
       "android": {
         "buildType": "apk"
       }
