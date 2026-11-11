@@ -10,6 +10,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import NavBar from "@/components/NavBar";
+import AppUpdateManager from "@/components/AppUpdateManager";
 import { colors } from "@/constants/theme";
 import { SoundProvider } from "@/components/SoundProvider";
 
@@ -135,6 +136,7 @@ export default function RootLayout() {
                               </View>
 
                               {!isMediaScreen && !isDownloadScreen && <NavBar />}
+                              <AppUpdateManager suppressPrompt={isMediaScreen || isDownloadScreen} />
                         </GestureHandlerRootView>
                   </SoundProvider>
             </SafeAreaProvider>
