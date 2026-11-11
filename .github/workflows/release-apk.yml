@@ -183,7 +183,7 @@ jobs:
           source_notes="APK built from $GITHUB_REPOSITORY at commit $GITHUB_SHA."
           legacy_notes="MoviesFlix Android APK v$RELEASE_VERSION. Built from [$GITHUB_REPOSITORY](https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA)."
 
-          # The source release is traceable to this repository's signed version tag.
+          # The source release is traceable to this repository's version tag.
           ensure_draft "$GITHUB_REPOSITORY" "$GH_TOKEN" "MoviesFlix v$RELEASE_VERSION" "$source_notes" "" "true"
           # Keep mirroring releases to the repo checked by already-installed app versions.
           ensure_draft "$LEGACY_RELEASE_REPO" "$RELEASES_TOKEN" "MoviesFlix v$RELEASE_VERSION" "$legacy_notes" "main" "false"
