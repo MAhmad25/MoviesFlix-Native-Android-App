@@ -428,6 +428,9 @@ const styles = StyleSheet.create({
   settingsButton: {
     minHeight: 44,
     marginTop: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
     borderRadius: 10,
     borderColor: "rgba(255,121,73,0.5)",
   },
