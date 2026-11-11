@@ -1,0 +1,193 @@
+name: Android APK
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and publish APK
+    runs-on: ubuntu-latest
+    env:
+      # Older installed app versions read updates from this repository.
+      LEGACY_RELEASE_REPO: MAhmad25/TheMoviesFlix-Streaming-Platform
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Validate release ref and credentials
+        id: release
+        shell: bash
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$EXPO_TOKEN" ]]; then
+            echo "Missing EXPO_TOKEN repository secret." >&2
+            exit 1
+          fi
+
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            tag="$GITHUB_REF_NAME"
+            if [[ ! "$tag" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+              echo "Release tags must use vMAJOR.MINOR.PATCH, for example v1.2.3." >&2
+              exit 1
+            fi
+            version="${tag#v}"
+            app_version="$(node -p 'JSON.parse(require("node:fs").readFileSync("app.json", "utf8")).expo.version')"
+            if [[ "$version" != "$app_version" ]]; then
+              echo "Tag $tag does not match expo.version $app_version in app.json." >&2
+              exit 1
+            fi
+            app_update_repo="$(node -p 'JSON.parse(require("node:fs").readFileSync("app.json", "utf8")).expo.extra?.githubRepo ?? ""')"
+            if [[ -n "$app_update_repo" && "$app_update_repo" != "$LEGACY_RELEASE_REPO" ]]; then
+              echo "Release mirror $LEGACY_RELEASE_REPO does not match app.json extra.githubRepo $app_update_repo." >&2
+              exit 1
+            fi
+            if [[ -z "$RELEASES_TOKEN" ]]; then
+              echo "Missing RELEASES_TOKEN repository secret for the existing update repository." >&2
+              exit 1
+            fi
+
+            # Prevent a rerun from creating a second APK/versionCode for an already published tag.
+            for repo in "$GITHUB_REPOSITORY" "$LEGACY_RELEASE_REPO"; do
+              token="$GH_TOKEN"
+              if [[ "$repo" == "$LEGACY_RELEASE_REPO" ]]; then token="$RELEASES_TOKEN"; fi
+              if state="$(GH_TOKEN="$token" gh release view "$tag" --repo "$repo" --json isDraft --jq '.isDraft' 2>/dev/null)"; then
+                if [[ "$state" != "true" ]]; then
+                  echo "Release $tag is already published in $repo; create a new version tag." >&2
+                  exit 1
+                fi
+              fi
+            done
+
+            echo "profile=production" >> "$GITHUB_OUTPUT"
+            echo "version=$version" >> "$GITHUB_OUTPUT"
+            echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          else
+            echo "profile=preview" >> "$GITHUB_OUTPUT"
+            echo "version=preview-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install JavaScript dependencies
+        run: npm ci
+
+      - name: Set up Expo and EAS
+        uses: expo/expo-github-action@v9
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build Android APK with EAS
+        shell: bash
+        env:
+          BUILD_PROFILE: ${{ steps.release.outputs.profile }}
+        run: |
+          set -euo pipefail
+          eas build \
+            --platform android \
+            --profile "$BUILD_PROFILE" \
+            --non-interactive \
+            --wait \
+            --json > "$RUNNER_TEMP/eas-build.json"
+
+          apk_url="$(node - "$RUNNER_TEMP/eas-build.json" <<'NODE'
+          const fs = require('node:fs');
+          const result = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          const builds = Array.isArray(result) ? result : [result];
+          const build = builds.find((item) => item.platform?.toLowerCase() === 'android') ?? builds[0];
+          const url = build?.artifacts?.buildUrl;
+          if (!url) {
+            process.stderr.write('EAS completed without returning an Android APK URL.\n');
+            process.exit(1);
+          }
+          process.stdout.write(url);
+          NODE
+          )"
+
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            apk_path="$RUNNER_TEMP/MoviesFlix-v${{ steps.release.outputs.version }}.apk"
+          else
+            apk_path="$RUNNER_TEMP/MoviesFlix-preview-${GITHUB_SHA::7}.apk"
+          fi
+          curl --fail --location --silent --show-error "$apk_url" --output "$apk_path"
+          sha256sum "$apk_path" > "$apk_path.sha256"
+          echo "apk=$apk_path" >> "$GITHUB_OUTPUT"
+          echo "checksum=$apk_path.sha256" >> "$GITHUB_OUTPUT"
+        id: apk
+
+      - name: Save branch build for testers
+        if: startsWith(github.ref, 'refs/heads/')
+        uses: actions/upload-artifact@v4
+        with:
+          name: MoviesFlix-preview-${{ github.sha }}
+          path: |
+            ${{ steps.apk.outputs.apk }}
+            ${{ steps.apk.outputs.checksum }}
+          retention-days: 14
+
+      - name: Create release drafts with APK assets
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+          APK_PATH: ${{ steps.apk.outputs.apk }}
+          CHECKSUM_PATH: ${{ steps.apk.outputs.checksum }}
+        run: |
+          set -euo pipefail
+
+          ensure_draft() {
+            local repo="$1"
+            local token="$2"
+            local title="$3"
+            local notes="$4"
+            local target="$5"
+            local verify_tag="$6"
+            local state
+
+            if state="$(GH_TOKEN="$token" gh release view "$RELEASE_TAG" --repo "$repo" --json isDraft --jq '.isDraft' 2>/dev/null)"; then
+              if [[ "$state" != "true" ]]; then
+                echo "Refusing to replace already published release $RELEASE_TAG in $repo." >&2
+                return 1
+              fi
+              GH_TOKEN="$token" gh release upload "$RELEASE_TAG" "$APK_PATH" "$CHECKSUM_PATH" --repo "$repo" --clobber
+            else
+              local args=(release create "$RELEASE_TAG" "$APK_PATH" "$CHECKSUM_PATH" --repo "$repo" --title "$title" --draft --notes "$notes")
+              if [[ -n "$target" ]]; then args+=(--target "$target"); fi
+              if [[ "$verify_tag" == "true" ]]; then args+=(--verify-tag); fi
+              GH_TOKEN="$token" gh "${args[@]}"
+            fi
+          }
+
+          source_notes="APK built from $GITHUB_REPOSITORY at commit $GITHUB_SHA."
+          legacy_notes="MoviesFlix Android APK v$RELEASE_VERSION. Built from [$GITHUB_REPOSITORY](https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA)."
+
+          # The source release is traceable to this repository's signed version tag.
+          ensure_draft "$GITHUB_REPOSITORY" "$GH_TOKEN" "MoviesFlix v$RELEASE_VERSION" "$source_notes" "" "true"
+          # Keep mirroring releases to the repo checked by already-installed app versions.
+          ensure_draft "$LEGACY_RELEASE_REPO" "$RELEASES_TOKEN" "MoviesFlix v$RELEASE_VERSION" "$legacy_notes" "main" "false"
+
+          GH_TOKEN="$RELEASES_TOKEN" gh release edit "$RELEASE_TAG" --repo "$LEGACY_RELEASE_REPO" --draft=false
+          GH_TOKEN="$GH_TOKEN" gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft=false
+
