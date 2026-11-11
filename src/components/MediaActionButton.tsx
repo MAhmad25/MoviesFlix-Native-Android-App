@@ -1,6 +1,6 @@
-import { Text, View, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { Download, Play, Tv } from "lucide-react-native";
-import { RadiantButton } from "./ui/base/radiant-button";
+import { Button } from "heroui-native/button";
 import { colors } from "@/constants/theme";
 import { fonts } from "@/constants/fonts";
 import { playSound, type InteractionCue } from "@/lib/interactionSounds";
@@ -23,31 +23,29 @@ export function MediaActionButton({ action, onPress, disabled = false, sound = "
   const foreground = primary ? colors.card : colors.text;
   return (
     <View style={styles.cell}>
-      <RadiantButton
+      <Button
+        variant={primary ? "primary" : "outline"}
+        size="md"
+        feedbackVariant="scale"
+        background={null}
+        isDisabled={disabled}
         onPress={() => { playSound(sound, { emphasis: "strong" }); onPress(); }}
         accessibilityLabel={label}
-        disabled={disabled}
-        paddingHorizontal={8}
-        paddingVertical={14}
-        borderRadius={10}
-        borderWidth={1.5}
-        showDots={false}
-        shimmerOpacity={primary ? 0.16 : 0.24}
-        breathingEnabled={false}
-        showGlow={!primary}
-        glowBlur={12}
-        theme={{ background: primary ? colors.accent : colors.backgroundLight, backgroundSubtle: colors.accent, foreground, highlight: colors.accent, highlightSubtle: colors.accent }}
+        style={[styles.button, primary ? styles.primaryButton : styles.secondaryButton]}
       >
         <View style={styles.label}>
           <Icon size={17} color={foreground} fill={action === "trailer" ? foreground : "none"} />
-          <Text style={{ color: foreground, fontFamily: fonts.body, fontSize: 13, fontWeight: "700" }}>{label}</Text>
+          <Button.Label style={{ color: foreground, fontFamily: fonts.body, fontSize: 13, fontWeight: "700" }}>{label}</Button.Label>
         </View>
-      </RadiantButton>
+      </Button>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   cell: { flex: 1, minWidth: 0 },
+  button: { minHeight: 48, borderRadius: 14, paddingHorizontal: 8 },
+  primaryButton: { backgroundColor: colors.accent, borderColor: colors.accent },
+  secondaryButton: { borderColor: "rgba(255,121,73,0.5)" },
   label: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 },
 });

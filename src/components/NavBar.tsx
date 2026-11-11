@@ -2,7 +2,7 @@ import { StyleSheet, View } from "react-native";
 import { useRouter, useSegments } from "expo-router";
 import { Film, Home, Search, Tv, Users } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { MaskedTabBar } from "@/components/ui/organisms/masked-tab-bar";
+import { Tabs } from "heroui-native/tabs";
 import { colors } from "@/constants/theme";
 import { fonts } from "@/constants/fonts";
 import { playSound } from "@/lib/interactionSounds";
@@ -31,35 +31,36 @@ export default function NavBar() {
 
   return (
     <View style={[styles.dock, { paddingBottom: Math.max(insets.bottom, 8), paddingLeft: insets.left, paddingRight: insets.right }]}>
-      <MaskedTabBar
+      <Tabs
         value={activeRoute}
         onValueChange={navigateTo}
-        onValueReselect={navigateTo}
-        theme="dark"
-        radius={16}
-        height={64}
-        padding={4}
-        gap={0}
-        iconSize={21}
-        fontSize={10}
-        style={styles.bar}
-        palette={{ track: colors.card, pill: colors.accent, inactive: colors.muted, active: colors.card }}
+        variant="secondary"
+        animation="disable-all"
+        style={styles.tabs}
       >
-        <MaskedTabBar.List>
+        <Tabs.List background={null} style={styles.bar}>
           {NAV_ITEMS.map(({ href, label, Icon }) => (
-            <MaskedTabBar.Trigger key={href} value={href} accessibilityLabel={label} style={styles.tab}>
-              <MaskedTabBar.Icon>{({ size, color }) => <Icon size={size} color={color} />}</MaskedTabBar.Icon>
-              <MaskedTabBar.Label style={{ fontFamily: fonts.body }}>{label}</MaskedTabBar.Label>
-            </MaskedTabBar.Trigger>
+            <Tabs.Trigger key={href} value={href} accessibilityLabel={label} style={styles.tab}>
+              {({ isSelected }) => (
+                <View style={[styles.tabContent, isSelected && styles.activeTab]}>
+                  <Icon size={20} color={isSelected ? colors.card : colors.muted} />
+                  <Tabs.Label style={[styles.label, { color: isSelected ? colors.card : colors.muted }]}>{label}</Tabs.Label>
+                </View>
+              )}
+            </Tabs.Trigger>
           ))}
-        </MaskedTabBar.List>
-      </MaskedTabBar>
+        </Tabs.List>
+      </Tabs>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   dock: { backgroundColor: colors.card, borderTopWidth: 1, borderTopColor: colors.backgroundLight },
-  bar: { borderRadius: 0 },
-  tab: { flexDirection: "column", gap: 5, paddingHorizontal: 2 },
+  tabs: { width: "100%" },
+  bar: { height: 66, alignItems: "center", justifyContent: "space-around", paddingHorizontal: 6 },
+  tab: { flex: 1, alignItems: "center", justifyContent: "center", minHeight: 58, paddingHorizontal: 0, borderRadius: 10, overflow: "hidden" },
+  tabContent: { minWidth: 58, minHeight: 48, alignItems: "center", justifyContent: "center", gap: 3, borderRadius: 10, overflow: "hidden", paddingHorizontal: 3, paddingVertical: 4 },
+  activeTab: { backgroundColor: colors.accent, borderRadius: 10 },
+  label: { fontFamily: fonts.body, fontSize: 10, includeFontPadding: false },
 });

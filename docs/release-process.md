@@ -27,4 +27,3 @@ EAS remote versioning is enabled. Check the last APK's `versionCode` against `ea
 4. The workflow checks the tag against `expo.version`, runs an EAS production APK build, and publishes the APK plus SHA-256 file to a versioned GitHub Release in both repositories. The compatibility release is published for current installed users; the source repository release keeps the build linked to its source tag.
 
 Each production release gets a higher EAS-managed Android `versionCode`; `expo.version` is the user-facing version name. Do not reuse or manually decrement either value. A push to `master` creates a preview APK as a 14-day Actions artifact and does not publish a stable release.
-

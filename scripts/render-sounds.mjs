@@ -1,5 +1,6 @@
 // Render the installed Cuelume engine offline once; Expo Go plays the bundled WAVs.
 // npm run sounds:render (requires Playwright Chromium, or SOUND_BROWSER_CHANNEL=msedge).
+// Pass cue names after `--` to render only those files; all cues use the bubble theme.
 import { createServer } from "node:http";
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import { resolve, relative, dirname } from "node:path";
@@ -46,13 +47,21 @@ function wav(samples, rate) {
       return buffer;
 }
 
+const allCues = [
+      "tap", "select", "select-back", "toggle", "open", "open-strong", "close",
+      "navigate", "navigate-strong", "navigate-back", "error", "type", "type-delete", "type-enter",
+];
+const requestedCues = process.argv.slice(2);
+const invalidCues = requestedCues.filter((name) => !allCues.includes(name));
+if (invalidCues.length) throw new Error(`Unknown cue(s): ${invalidCues.join(", ")}`);
+const cues = requestedCues.length ? requestedCues : allCues;
+
 await mkdir(output, { recursive: true });
 await new Promise((done) => server.listen(0, "127.0.0.1", done));
 let browser;
 try {
       browser = await chromium.launch({ headless: true, ...(process.env.SOUND_BROWSER_CHANNEL ? { channel: process.env.SOUND_BROWSER_CHANNEL } : {}) });
       const page = await browser.newPage();
-      const cues = ["tap", "select", "select-back", "toggle", "open", "open-strong", "close", "navigate", "navigate-strong", "navigate-back", "error", "type", "type-delete", "type-enter"];
       for (const name of cues) {
             await page.goto(`http://127.0.0.1:${server.address().port}`);
             await page.locator("#activate").click();
@@ -74,6 +83,7 @@ try {
                               input: name.startsWith("type") ? "keyboard" : "touch",
                               key: name === "type-delete" ? "delete" : name === "type-enter" ? "enter" : "printable",
                               direction: name.endsWith("back") ? "back" : "forward",
+                              theme: "bubble",
                         });
                   } finally {
                         window.setTimeout = timeout;

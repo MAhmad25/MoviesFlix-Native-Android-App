@@ -84,8 +84,6 @@ export default function SearchScreen() {
                         tint={colors.accent}
                         onSearch={onSearchChange}
                         onClear={onClear}
-                        textCenterOffset={2.2}
-                        iconCenterOffset={2.2}
                   />
                   {!!error && (
                         <Text style={{ color: colors.muted }} className="mt-6 text-center text-sm">

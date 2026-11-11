@@ -190,4 +190,3 @@ jobs:
 
           GH_TOKEN="$RELEASES_TOKEN" gh release edit "$RELEASE_TAG" --repo "$LEGACY_RELEASE_REPO" --draft=false
           GH_TOKEN="$GH_TOKEN" gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft=false
-

@@ -58,6 +58,18 @@ export interface SeasonItem {
   vote_average?: number;
 }
 
+export interface EpisodeItem {
+  id: number;
+  episode_number: number;
+  season_number: number;
+  name: string;
+  overview?: string;
+  still_path?: string | null;
+  air_date?: string;
+  runtime?: number | null;
+  vote_average?: number;
+}
+
 export interface MovieDetailBundle {
   detail: MediaItem & {
     genres: Genre[];

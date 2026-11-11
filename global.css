@@ -1,14 +1,8 @@
-@import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/preflight.css" layer(base);
-@import "tailwindcss/utilities.css";
-
-@import "nativewind/theme";
+@import "tailwindcss";
+@import "uniwind";
+@import "heroui-native/styles";
 
 @theme {
-  /* ==============================
-     MOVIESFLIX PALETTE
-     Ported from the web app's index.css
-  ============================== */
   --color-flix-bg: #300b07;
   --color-flix-bg-light: #45120c;
   --color-flix-card: #0f0000;
@@ -16,4 +10,40 @@
   --color-flix-rating: #fde047;
   --color-flix-text: #fefefe;
   --color-flix-muted: #d4d4d8;
+
+  --font-normal: "Primary";
+  --font-medium: "Primary";
+  --font-semibold: "Astralaga";
+  --font-bold: "Astralaga";
+}
+
+@layer theme {
+  @variant dark {
+    --background: #300b07;
+    --foreground: #fefefe;
+    --surface: #0f0000;
+    --surface-foreground: #fefefe;
+    --surface-secondary: #45120c;
+    --surface-secondary-foreground: #fefefe;
+    --surface-tertiary: #300b07;
+    --surface-tertiary-foreground: #d4d4d8;
+    --overlay: #45120c;
+    --overlay-foreground: #fefefe;
+    --backdrop: rgba(0, 0, 0, 0.72);
+    --muted: #d4d4d8;
+    --default: #45120c;
+    --default-foreground: #fefefe;
+    --accent: #ff7949;
+    --accent-foreground: #0f0000;
+    --field-background: #0f0000;
+    --field-foreground: #fefefe;
+    --field-placeholder: #d4d4d8;
+    --field-border: rgba(255, 121, 73, 0.35);
+    --segment: #45120c;
+    --segment-foreground: #fefefe;
+    --border: rgba(255, 121, 73, 0.2);
+    --separator: rgba(255, 121, 73, 0.2);
+    --focus: #ff7949;
+    --link: #ff7949;
+  }
 }

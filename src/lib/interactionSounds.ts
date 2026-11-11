@@ -32,7 +32,7 @@ export function initializeSounds() {
       void setAudioModeAsync({ playsInSilentMode: true, interruptionMode: "mixWithOthers", shouldPlayInBackground: false }).catch(() => {});
       for (const [name, source] of Object.entries(sources)) {
             const player = createAudioPlayer(source, { keepAudioSessionActive: true });
-            player.volume = name.startsWith("type") ? 10 : 10;
+            player.volume = name.startsWith("type") ? 0.3 : 0.42;
             players.set(name as keyof typeof sources, player);
       }
       return () => {

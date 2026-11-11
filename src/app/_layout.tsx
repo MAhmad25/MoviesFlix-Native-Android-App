@@ -8,6 +8,7 @@ import { StatusBar } from "expo-status-bar";
 import { Image, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { HeroUINativeProvider } from "heroui-native/provider";
 
 import NavBar from "@/components/NavBar";
 import AppUpdateManager from "@/components/AppUpdateManager";
@@ -15,6 +16,11 @@ import { colors } from "@/constants/theme";
 import { SoundProvider } from "@/components/SoundProvider";
 
 SplashScreen.preventAutoHideAsync();
+
+const heroUIConfig = {
+  toast: false,
+  devInfo: { stylingPrinciples: false },
+} as const;
 
 export default function RootLayout() {
       const pathname = usePathname();
@@ -67,6 +73,7 @@ export default function RootLayout() {
                                     backgroundColor: colors.background,
                               }}
                         >
+                              <HeroUINativeProvider config={heroUIConfig}>
                               <StatusBar hidden />
 
                               <View style={{ flex: 1 }}>
@@ -137,6 +144,7 @@ export default function RootLayout() {
 
                               {!isMediaScreen && !isDownloadScreen && <NavBar />}
                               <AppUpdateManager suppressPrompt={isMediaScreen || isDownloadScreen} />
+                              </HeroUINativeProvider>
                         </GestureHandlerRootView>
                   </SoundProvider>
             </SafeAreaProvider>

@@ -1,18 +1,21 @@
 import { SoundPressable as Pressable } from "@/components/SoundPressable";
-import { useCallback, useMemo, useRef } from "react";
-import { AppState, Dimensions, Text, View } from "react-native";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { Alert, AppState, Dimensions, Text, View } from "react-native";
 import type { ImageSourcePropType } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useRouter } from "expo-router";
 import { colors } from "@/constants/theme";
 import { fonts } from "@/constants/fonts";
-import { mediaTitle, mediaType, tmdbImage } from "@/lib/tmdb";
+import { mediaTitle, mediaType, tmdb, tmdbImage } from "@/lib/tmdb";
 import { useTmdbList } from "@/hooks/useTmdbList";
-import type { MediaItem } from "@/lib/types";
+import type { MediaItem, SeasonItem } from "@/lib/types";
+import { openDownloadPage } from "@/lib/downloads";
 import { StarIcon } from "./icons/StarIcon";
 import { Shimmer, ShimmerGroup } from "./Shimmer";
 import { ParallaxCarousel } from "./ParallaxCarousel";
 import type { ParallaxCarouselRef } from "./ParallaxCarousel/types";
+import { MediaActionButton } from "./MediaActionButton";
+import SeasonModal from "./SeasonModal";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const ITEM_WIDTH = SCREEN_WIDTH - 56;
@@ -27,7 +30,7 @@ type HeroItem = MediaItem & { image: ImageSourcePropType };
  * <ParallaxCarousel /> for a peeking-card layout with a subtle image
  * parallax as you swipe, instead of a plain
  * paging FlatList. The data + rendered content (title, overview, rating,
- * "See details") are unchanged — still real TMDB trending data.
+ * details plus direct watch and download actions — still real TMDB trending data.
  */
 export default function HeaderCarousel() {
   const { data, loading } = useTmdbList("trending/all/day");
@@ -36,6 +39,27 @@ export default function HeaderCarousel() {
   const indexRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const focusedRef = useRef(false);
+  const [selectedSeason, setSelectedSeason] = useState<SeasonItem | null>(null);
+  const [selectedTvId, setSelectedTvId] = useState<string | null>(null);
+  const [openingTvId, setOpeningTvId] = useState<number | null>(null);
+
+  const openFirstSeason = useCallback(async (id: number) => {
+    setOpeningTvId(id);
+    try {
+      const { data: detail } = await tmdb.get(`/tv/${id}?language=en-US`);
+      const season = detail.seasons?.find((entry: SeasonItem) => entry.season_number > 0 && entry.episode_count > 0);
+      if (!season) {
+        Alert.alert("Episodes unavailable", "This series does not have a season available to play yet.");
+        return;
+      }
+      setSelectedTvId(String(id));
+      setSelectedSeason(season);
+    } catch {
+      Alert.alert("Could not load series", "Check your connection and try the Watch or Download button again.");
+    } finally {
+      setOpeningTvId(null);
+    }
+  }, []);
 
   const heroData = useMemo<HeroItem[]>(
     () =>
@@ -105,6 +129,7 @@ export default function HeaderCarousel() {
 
   return (
     <View style={{ height: ITEM_HEIGHT }}>
+      <SeasonModal season={selectedSeason} tvId={selectedTvId ?? ""} onClose={() => { setSelectedSeason(null); setSelectedTvId(null); }} />
       <ParallaxCarousel
         ref={carouselRef}
         data={heroData}
@@ -165,6 +190,28 @@ export default function HeaderCarousel() {
                     </Text>
                   </Pressable>
                 </View>
+                {type !== "person" && (
+                  <View className="flex-row gap-2">
+                    <MediaActionButton
+                      action="watch"
+                      sound="open"
+                      disabled={type === "tv" && openingTvId === item.id}
+                      onPress={() => {
+                        if (type === "tv") void openFirstSeason(item.id);
+                        else router.push(`/movie/${item.id}/watch` as any);
+                      }}
+                    />
+                    <MediaActionButton
+                      action="download"
+                      sound="open"
+                      disabled={type === "tv" && openingTvId === item.id}
+                      onPress={() => {
+                        if (type === "tv") void openFirstSeason(item.id);
+                        else void openDownloadPage({ type: "movie", id: String(item.id) });
+                      }}
+                    />
+                  </View>
+                )}
               </View>
             </View>
           );

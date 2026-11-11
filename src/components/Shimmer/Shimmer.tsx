@@ -1,325 +1,89 @@
-import { LinearGradient } from "expo-linear-gradient";
-import React, { useCallback, useEffect, useState, useRef, memo } from "react";
-import {
-  Animated,
-  View,
-  type LayoutRectangle,
-  type LayoutChangeEvent,
-} from "react-native";
-import { Easing } from "react-native-reanimated";
+import React, { createContext, memo, useContext } from "react";
+import { StyleSheet, View } from "react-native";
+import { Skeleton } from "heroui-native/skeleton";
 import type { IShimmerEffect, IShimmerGroup } from "./Shimmer.types";
 import { SHIMMER_PRESETS } from "./const";
 
-/**
- * Core shimmer primitive. Renders `children` once `isLoading` is false
- * (with a soft fade-in), otherwise renders an animated gradient/pulse
- * sweep sized to whatever `style` dimensions are passed in — so it can
- * stand in for any image, line of text, avatar, or card while data or
- * an image is still loading.
- */
-export const ShimmerEffect: React.FC<IShimmerEffect> &
-  React.FunctionComponent<IShimmerEffect> = memo<IShimmerEffect>(
-  ({
-    isLoading = true,
-    shimmerColors,
-    duration = 1300,
-    className,
-    style,
-    variant = "shimmer",
-    direction = "leftToRight",
-    preset = "brand",
-    opacity = 1,
-    children,
-  }: IShimmerEffect):
-    | (React.ReactNode & React.JSX.Element & React.ReactElement)
-    | null => {
-    const [layout, setLayout] = useState<LayoutRectangle | null>(null);
-    const shimmerAnim = useRef<Animated.Value>(new Animated.Value(0)).current;
-    const pulseAnim = useRef<Animated.Value>(new Animated.Value(0.3)).current;
-    const fadeAnim = useRef<Animated.Value>(new Animated.Value(0)).current;
+interface ShimmerGroupSettings {
+  isLoading: boolean;
+  duration: number;
+  variant: "shimmer" | "pulse";
+  preset: NonNullable<IShimmerGroup["preset"]>;
+  shimmerColors?: string[];
+  opacity: number;
+}
 
-    const theme = SHIMMER_PRESETS[preset] ?? SHIMMER_PRESETS.brand;
+const ShimmerSettingsContext = createContext<ShimmerGroupSettings | null>(null);
 
-    const themeColors =
-      shimmerColors && shimmerColors.length >= 2 ? shimmerColors : theme.colors;
+function getHighlightColor(preset: IShimmerEffect["preset"], shimmerColors?: string[]) {
+  const theme = SHIMMER_PRESETS[preset ?? "brand"] ?? SHIMMER_PRESETS.brand;
+  return shimmerColors?.[2] ?? theme.colors[2] ?? colors.accent;
+}
 
-    const backgroundColor = theme.backgroundColor;
+export const ShimmerEffect: React.FC<IShimmerEffect> = memo(function ShimmerEffect({
+  isLoading,
+  shimmerColors,
+  duration,
+  className,
+  style,
+  variant,
+  preset,
+  opacity,
+  children,
+}) {
+  const group = useContext(ShimmerSettingsContext);
+  const resolvedPreset = preset ?? group?.preset ?? "brand";
+  const theme = SHIMMER_PRESETS[resolvedPreset] ?? SHIMMER_PRESETS.brand;
+  const animationDuration = duration ?? group?.duration ?? 1300;
+  const highlightColor = getHighlightColor(resolvedPreset, shimmerColors ?? group?.shimmerColors);
+  const effectOpacity = opacity ?? group?.opacity ?? style?.opacity ?? 1;
+  const backgroundColor = style?.backgroundColor ?? theme.backgroundColor ?? "rgba(15,0,0,1)";
 
-    const onLayout = useCallback((e: LayoutChangeEvent) => {
-      setLayout(e.nativeEvent.layout);
-    }, []);
-
-    useEffect(() => {
-      if (!layout) return;
-
-      if (isLoading) {
-        fadeAnim.setValue(0);
-
-        if (variant === "shimmer") {
-          shimmerAnim.setValue(0);
-          Animated.loop(
-            Animated.timing(shimmerAnim, {
-              toValue: 1,
-              duration,
-              easing: Easing.linear,
-              useNativeDriver: true,
-            }),
-          ).start();
-        } else {
-          Animated.loop(
-            Animated.sequence([
-              Animated.timing(pulseAnim, {
-                toValue: 1,
-                duration: duration / 2,
-                easing: Easing.ease,
-                useNativeDriver: true,
-              }),
-              Animated.timing(pulseAnim, {
-                toValue: 0.3,
-                duration: duration / 2,
-                easing: Easing.ease,
-                useNativeDriver: true,
-              }),
-            ]),
-          ).start();
-        }
-      } else {
-        shimmerAnim.stopAnimation();
-        pulseAnim.stopAnimation();
-        shimmerAnim.setValue(0);
-        pulseAnim.setValue(0.3);
-
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 400,
-          easing: Easing.out(Easing.ease),
-          useNativeDriver: true,
-        }).start();
-      }
-
-      return () => {
-        shimmerAnim.stopAnimation();
-        pulseAnim.stopAnimation();
-      };
-    }, [
-      layout,
-      isLoading,
-      duration,
-      variant,
-      shimmerAnim,
-      pulseAnim,
-      fadeAnim,
-    ]);
-
-    const getWaveWidth = () => {
-      if (!layout) return 0;
-      if (direction === "leftToRight" || direction === "rightToLeft") {
-        return layout.width * 0.5;
-      }
-      return layout.height * 0.5;
-    };
-
-    const waveWidth = getWaveWidth();
-
-    const getTransform = () => {
-      if (!layout) return {};
-
-      if (variant === "pulse") {
-        return { opacity: pulseAnim };
-      }
-
-      switch (direction) {
-        case "leftToRight":
-          return {
-            transform: [
-              {
-                translateX: shimmerAnim.interpolate<number>({
-                  inputRange: [0, 1],
-                  outputRange: [-waveWidth, layout.width + waveWidth],
-                }),
-              },
-            ],
-          };
-        case "rightToLeft":
-          return {
-            transform: [
-              {
-                translateX: shimmerAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [layout.width + waveWidth, -waveWidth],
-                }),
-              },
-            ],
-          };
-        case "topToBottom":
-          return {
-            transform: [
-              {
-                translateY: shimmerAnim.interpolate<number>({
-                  inputRange: [0, 1],
-                  outputRange: [-waveWidth, layout.height + waveWidth],
-                }),
-              },
-            ],
-          };
-        case "bottomToTop":
-          return {
-            transform: [
-              {
-                translateY: shimmerAnim.interpolate<number>({
-                  inputRange: [0, 1],
-                  outputRange: [layout.height + waveWidth, -waveWidth],
-                }),
-              },
-            ],
-          };
-        default:
-          return {};
-      }
-    };
-
-    return (
-      <View
-        onLayout={onLayout}
-        className={className}
-        style={[
-          style,
-          {
-            overflow: "hidden",
-            backgroundColor: isLoading
-              ? backgroundColor || style?.backgroundColor
-              : style?.backgroundColor || "transparent",
-            opacity,
-          },
-        ]}
+  return (
+    <View className={className} style={[styles.placeholder, style, { opacity: effectOpacity }]}>
+      <Skeleton
+        isLoading={isLoading ?? group?.isLoading ?? true}
+        variant={variant ?? group?.variant ?? "shimmer"}
+        style={[StyleSheet.absoluteFill, { backgroundColor }]}
+        animation={{
+          shimmer: { duration: animationDuration, highlightColor },
+          pulse: { duration: animationDuration, minOpacity: 0.35, maxOpacity: 0.9 },
+        }}
       >
-        {!isLoading && (
-          <Animated.View
-            style={{
-              opacity: fadeAnim,
-            }}
-          >
-            {children}
-          </Animated.View>
-        )}
-        {isLoading && layout && (
-          <View
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              overflow: "hidden",
-            }}
-            pointerEvents="none"
-          >
-            <Animated.View
-              style={[
-                {
-                  width:
-                    variant === "shimmer" &&
-                    (direction === "leftToRight" || direction === "rightToLeft")
-                      ? waveWidth
-                      : layout.width,
-                  height:
-                    variant === "shimmer" &&
-                    (direction === "topToBottom" || direction === "bottomToTop")
-                      ? waveWidth
-                      : layout.height,
-                },
-                getTransform(),
-              ]}
-            >
-              {variant === "shimmer" ? (
-                <LinearGradient
-                  colors={themeColors as [string, string, ...string[]]}
-                  start={
-                    direction === "leftToRight" || direction === "rightToLeft"
-                      ? { x: 0, y: 0.5 }
-                      : { x: 0.5, y: 0 }
-                  }
-                  end={
-                    direction === "leftToRight" || direction === "rightToLeft"
-                      ? { x: 1, y: 0.5 }
-                      : { x: 0.5, y: 1 }
-                  }
-                  style={{ flex: 1 }}
-                />
-              ) : (
-                <View
-                  style={{
-                    flex: 1,
-                    backgroundColor: themeColors[1],
-                  }}
-                />
-              )}
-            </Animated.View>
-          </View>
-        )}
-      </View>
-    );
-  },
-);
+        {children}
+      </Skeleton>
+    </View>
+  );
+});
 
-/**
- * Wraps a subtree of `Shimmer` placeholders and drives all of them from a
- * single `isLoading` flag, propagating shared preset/duration/etc. props
- * down without repeating them on every tile. This is what the loaders/
- * skeleton screens use to keep a whole layout in sync.
- */
-export const ShimmerGroup: React.FC<IShimmerGroup> &
-  React.FunctionComponent<IShimmerGroup> = memo<IShimmerGroup>(
-  ({
-    isLoading = true,
-    children,
-    preset = "brand",
-    shimmerColors,
-    duration = 1300,
-    direction = "leftToRight",
-    variant = "shimmer",
-    opacity = 1,
-  }: IShimmerGroup):
-    | (React.JSX.Element & React.ReactNode & React.ReactElement)
-    | null => {
-    const propagateProps = (children: React.ReactNode): React.ReactNode => {
-      return React.Children.map(children, (child) => {
-        if (!React.isValidElement(child)) {
-          return child;
-        }
+export const ShimmerGroup: React.FC<IShimmerGroup> = memo(function ShimmerGroup({
+  isLoading = true,
+  children,
+  preset = "brand",
+  shimmerColors,
+  duration = 1300,
+  variant = "shimmer",
+  opacity = 1,
+}) {
+  return (
+    <ShimmerSettingsContext.Provider
+      value={{
+        isLoading,
+        duration,
+        variant,
+        preset,
+        shimmerColors,
+        opacity,
+      }}
+    >
+      {children}
+    </ShimmerSettingsContext.Provider>
+  );
+});
 
-        if (child.type === Shimmer || child.type === ShimmerEffect) {
-          return React.cloneElement(child as React.ReactElement<any>, {
-            isLoading,
-            preset: child.props.preset || preset,
-            shimmerColors: child.props.shimmerColors || shimmerColors,
-            duration: child.props.duration || duration,
-            direction: child.props.direction || direction,
-            variant: child.props.variant || variant,
-            opacity: child.props.opacity ?? opacity,
-          });
-        }
+export const Shimmer: React.FC<IShimmerEffect> = memo(function Shimmer(props) {
+  return <ShimmerEffect {...props} />;
+});
 
-        if (child.props && child.props.children) {
-          return React.cloneElement(child as React.ReactElement<any>, {
-            children: propagateProps(child.props.children),
-          });
-        }
-
-        return child;
-      });
-    };
-
-    return <>{propagateProps(children)}</>;
-  },
-);
-
-/** Thin, ergonomic wrapper around `ShimmerEffect` — the tile you actually drop into a layout. */
-export const Shimmer: React.FC<IShimmerEffect> &
-  React.FunctionComponent<IShimmerEffect> = memo<IShimmerEffect>(
-  (
-    props: IShimmerEffect,
-  ): (React.ReactNode & React.JSX.Element & React.ReactElement) | null => {
-    return <ShimmerEffect {...props} />;
-  },
-);
+const colors = { accent: "#ff7949" } as const;
+const styles = StyleSheet.create({ placeholder: { overflow: "hidden" } });
