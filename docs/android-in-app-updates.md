@@ -4,22 +4,24 @@ MoviesFlix checks the public GitHub Releases API when the app opens and again af
 
 ## Publish each update
 
-1. Set `expo.version` in `app.json` to the next version, such as `1.0.2`, and raise `expo.android.versionCode` to a number greater than the last distributed APK. Keep the Android package name `com.ahmad123dev.moviesflixnative` unchanged.
-2. Build an installable APK with the same EAS Android signing credentials used for the APK already installed by users:
+1. Set `expo.version` in `app.json` to the next version and raise `expo.android.versionCode` above the last distributed APK. Keep the Android package name `com.ahmad123dev.moviesflixnative` unchanged.
+2. Commit and push the changes to `master`.
+3. Push a version tag that matches `expo.version`, such as `v1.0.3`:
 
-   ```powershell
-   eas build --platform android --profile preview
+   ```sh
+   git tag v1.0.3
+   git push origin v1.0.3
    ```
 
-3. Create a **published, non-prerelease** GitHub Release in `MAhmad25/TheMoviesFlix-Streaming-Platform` with a versioned tag that matches `expo.version`, for example `v1.0.2`.
-4. Attach the EAS `.apk` output to that release. The updater downloads the first `.apk` release asset, so attach the universal installable APK (not an `.aab`). Add concise release notes to the release body; those appear in the prompt.
-5. Existing installs check again at launch/foreground and download the newer release. Android displays its own install confirmation. The user must accept it; Android does not allow this app to silently replace itself.
+   The `Android APK` workflow validates the tag and credentials, builds a production APK with EAS, and publishes the APK to both this repository and `MAhmad25/TheMoviesFlix-Streaming-Platform`. A push to `master` alone only creates a preview build. The workflow requires `EXPO_TOKEN` and `RELEASES_TOKEN` repository secrets.
 
-## First updater release
+4. After the tag workflow succeeds and publishes the release, updater-enabled installs check at launch, foreground, and every six hours. They show the update prompt and download the APK; the user must confirm installation in Android.
 
-The repository's current latest release is tagged `Android`, named “Movies Flix Android App”, with the asset `MoviesFlix.apk`. That tag has no version the app can compare. This implementation sets the next app version to `1.0.1` and Android version code to `2`, so publish its APK as release `v1.0.1`. Existing `1.0.0` installs can then discover it. Future releases should use tags `v1.0.2`, `v1.0.3`, and so on.
+## Updater bootstrap
 
-Users must install the updater-enabled APK once through their existing update path: apps already installed before this code exists cannot check GitHub or gain the new installer permission retroactively. After that bootstrap install, the flow above handles future releases.
+The older `1.0.0` app has no in-app updater, so it cannot discover a new GitHub release by itself. Its users must install the updater-enabled APK once through the existing download path. The first updater-enabled APK is version `1.0.2` with Android version code `3`; after installing it, future versioned releases can be discovered in-app.
+
+Apps installed before the updater and install permission were added cannot check GitHub or gain the new permission retroactively.
 
 ## Android install permission
 

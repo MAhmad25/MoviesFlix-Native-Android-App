@@ -2,14 +2,14 @@
   "expo": {
     "name": "MoviesFlix",
     "slug": "moviesflix-native",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "moviesflix",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#300b07",
     "android": {
-      "versionCode": 2,
+      "versionCode": 3,
       "permissions": [
         "android.permission.REQUEST_INSTALL_PACKAGES"
       ],

@@ -10,25 +10,32 @@ import type { MediaItem } from "@/lib/types";
 export function useTmdbList(path: string) {
   const [data, setData] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [requestVersion, setRequestVersion] = useState(0);
 
   useEffect(() => {
     let active = true;
+    const controller = new AbortController();
     setLoading(true);
-    tmdb
-      .get(path)
+    setError(false);
+    setData([]);
+    tmdb.get(path, { signal: controller.signal })
       .then((res) => {
         if (active) setData(res.data.results ?? []);
       })
-      .catch((error) => {
-        console.log(error.message);
+      .catch(() => {
+        if (active) setError(true);
       })
       .finally(() => {
         if (active) setLoading(false);
       });
     return () => {
       active = false;
+      controller.abort();
     };
-  }, [path]);
+  }, [path, requestVersion]);
 
-  return { data, loading };
+  const retry = () => setRequestVersion((version) => version + 1);
+
+  return { data, loading, error, retry };
 }

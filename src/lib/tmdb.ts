@@ -8,6 +8,7 @@ import axios from "axios";
  */
 export const tmdb = axios.create({
   baseURL: process.env.EXPO_PUBLIC_TMDB_BASE_URL || "https://api.themoviedb.org/3",
+  timeout: 15_000,
   headers: {
     accept: "application/json",
     Authorization: `Bearer ${process.env.EXPO_PUBLIC_TMDB_KEY ?? ""}`,
