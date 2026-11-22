@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { FlatList, Text, View } from "react-native";
+import { useIsFocused } from "expo-router";
 import Card from "@/components/Card";
 import CategoryToggle from "@/components/CategoryToggle";
 import { CastLoader } from "@/components/loaders/CastLoader";
@@ -19,11 +20,16 @@ export default function MoviesScreen() {
   const [genresLoading, setGenresLoading] = useState(true);
   const [genresFailed, setGenresFailed] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("trending");
+  const isFocused = useIsFocused();
 
   useEffect(() => {
+    if (!isFocused || genres.length > 0) return;
+
     let isActive = true;
-    tmdb
-      .get("genre/movie/list?language=en-US")
+    const controller = new AbortController();
+    setGenresLoading(true);
+    setGenresFailed(false);
+    tmdb.get("genre/movie/list?language=en-US", { signal: controller.signal })
       .then(({ data }) => {
         if (isActive) setGenres(Array.isArray(data.genres) ? data.genres : []);
       })
@@ -36,8 +42,10 @@ export default function MoviesScreen() {
 
     return () => {
       isActive = false;
+      controller.abort();
+      setGenresLoading(false);
     };
-  }, []);
+  }, [genres.length, isFocused]);
 
   const categoryOptions = useMemo(
     () => [
@@ -51,7 +59,7 @@ export default function MoviesScreen() {
     if (selectedCategory === "trending") return `trending/movie/day?page=${page}`;
     return `discover/movie?language=en-US&include_adult=false&sort_by=popularity.desc&with_genres=${selectedCategory}&page=${page}`;
   }, [selectedCategory]);
-  const { items, loading, initialLoading, loadMore, error, hasMore, retry } = useTmdbInfiniteList(pathForPage, selectedCategory);
+  const { items, loading, initialLoading, loadMore, error, hasMore } = useTmdbInfiniteList(pathForPage, selectedCategory);
 
   const selectedLabel = selectedGenre?.name ?? "Trending";
 
@@ -99,15 +107,8 @@ export default function MoviesScreen() {
       ListEmptyComponent={initialLoading ? <PageLoader /> : error ? (
         <View style={{ alignItems: "center", paddingTop: 36, paddingHorizontal: 20 }}>
           <Text style={{ color: colors.muted, fontFamily: fonts.body, fontSize: 14, textAlign: "center" }}>
-            Movies couldn’t load. Check your connection and try again.
+            Movies couldn’t load. They’ll retry when you return to this screen.
           </Text>
-          <Pressable
-            accessibilityRole="button"
-            onPress={retry}
-            style={{ marginTop: 14, paddingHorizontal: 18, paddingVertical: 10, borderRadius: 10, backgroundColor: colors.accent }}
-          >
-            <Text style={{ color: colors.card, fontFamily: fonts.heading, fontSize: 14 }}>Try again</Text>
-          </Pressable>
         </View>
       ) : (
         <View style={{ alignItems: "center", paddingTop: 36 }}>
@@ -118,10 +119,7 @@ export default function MoviesScreen() {
       )}
       ListFooterComponent={loading && items.length > 0 ? <CastLoader variant="footer" /> : error && items.length > 0 ? (
         <View style={{ alignItems: "center", paddingVertical: 18 }}>
-          <Text style={{ color: colors.muted, fontFamily: fonts.body, fontSize: 13 }}>Couldn’t load more movies.</Text>
-          <Pressable accessibilityRole="button" onPress={retry} style={{ padding: 10 }}>
-            <Text style={{ color: colors.accent, fontFamily: fonts.heading, fontSize: 14 }}>Try again</Text>
-          </Pressable>
+          <Text style={{ color: colors.muted, fontFamily: fonts.body, fontSize: 13 }}>More movies will load when you return to this screen.</Text>
         </View>
       ) : null}
     />

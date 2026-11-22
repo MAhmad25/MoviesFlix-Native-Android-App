@@ -180,8 +180,8 @@ jobs:
             fi
           }
 
-          source_notes="Fixes Movies/Trending loading stalls with request timeouts, guarded pagination, and retry controls. Built from $GITHUB_REPOSITORY at commit $GITHUB_SHA."
-          legacy_notes="Fixes Movies/Trending loading stalls with request timeouts, guarded pagination, and retry controls. Built from [$GITHUB_REPOSITORY](https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA)."
+          source_notes="Fixes Movies/Trending loading stalls when returning to a route. Requests now recover on screen focus, retain loaded results, and guard pagination. Built from $GITHUB_REPOSITORY at commit $GITHUB_SHA."
+          legacy_notes="Fixes Movies/Trending loading stalls when returning to a route. Requests now recover on screen focus, retain loaded results, and guard pagination. Built from [$GITHUB_REPOSITORY](https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA)."
 
           # The source release is traceable to this repository's version tag.
           ensure_draft "$GITHUB_REPOSITORY" "$GH_TOKEN" "MoviesFlix v$RELEASE_VERSION" "$source_notes" "" "true"
