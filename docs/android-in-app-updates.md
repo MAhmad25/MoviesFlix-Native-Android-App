@@ -1,10 +1,12 @@
 # Android in-app updates
 
-MoviesFlix checks the public GitHub Releases API when the app opens and again after returning to the foreground. While open, it checks every six hours. A newer stable semantic-version release with an `.apk` asset opens the themed update dialog. The app downloads the APK to its cache, verifies the downloaded size, and opens Android's package installer.
+MoviesFlix checks the public GitHub Releases API when the app opens and again after returning to the foreground. While open, it checks every six hours. A newer stable semantic-version release with an `.apk` asset opens the themed update dialog. The app downloads the APK to persistent app storage, verifies the downloaded size, and opens Android's package installer. If the app closes after a completed download, the update dialog offers the saved APK again when reopened.
+
+Android requires the user to confirm the installation in its package installer. Closing MoviesFlix does not install the APK automatically.
 
 ## Publish each update
 
-1. Set `expo.version` in `app.json` to the next version and raise `expo.android.versionCode` above the last distributed APK. Keep the Android package name `com.ahmad123dev.moviesflixnative` unchanged.
+1. Set `expo.version` in `app.json` to the next version. EAS remote versioning increments Android `versionCode` for production builds. Keep the Android package name `com.ahmad123dev.moviesflixnative` unchanged.
 2. Commit and push the changes to `master`.
 3. Push a version tag that matches `expo.version`, such as `v1.0.3`:
 

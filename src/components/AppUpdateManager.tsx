@@ -65,7 +65,9 @@ export default function AppUpdateManager({ suppressPrompt = false }: AppUpdateMa
       const availableUpdate = await findAppUpdate();
       if (!availableUpdate || dismissedVersion.current === availableUpdate.version) return;
 
-      setUpdate(availableUpdate);
+      setUpdate((currentUpdate) =>
+        currentUpdate?.version === availableUpdate.version ? currentUpdate : availableUpdate,
+      );
       setIsVisible(true);
       setError(null);
     } catch {
@@ -93,10 +95,37 @@ export default function AppUpdateManager({ suppressPrompt = false }: AppUpdateMa
   }, [checkForUpdate]);
 
   useEffect(() => {
+    let isActive = true;
     setDownloadedApkUri(null);
+    setProgress(null);
     setError(null);
     setInstallPermissionHelp(false);
-  }, [update?.version]);
+
+    const documentDirectory = FileSystem.documentDirectory;
+    if (!update || !documentDirectory) {
+      return () => {
+        isActive = false;
+      };
+    }
+
+    const filenameVersion = update.version.replace(/[^\w.-]/g, "_");
+    const savedApkUri = documentDirectory + "moviesflix-update-" + filenameVersion + ".apk";
+    void FileSystem.getInfoAsync(savedApkUri)
+      .then((fileInfo) => {
+        if (!isActive || !fileInfo.exists) return;
+        if (update.apkSize > 0 && fileInfo.size !== update.apkSize) {
+          void FileSystem.deleteAsync(savedApkUri, { idempotent: true }).catch(() => undefined);
+          return;
+        }
+        setProgress(1);
+        setDownloadedApkUri(savedApkUri);
+      })
+      .catch(() => undefined);
+
+    return () => {
+      isActive = false;
+    };
+  }, [update]);
 
   const dismissUpdate = useCallback(() => {
     if (update) dismissedVersion.current = update.version;
@@ -131,14 +160,14 @@ export default function AppUpdateManager({ suppressPrompt = false }: AppUpdateMa
       return;
     }
 
-    const cacheDirectory = FileSystem.cacheDirectory;
-    if (!cacheDirectory) {
+    const documentDirectory = FileSystem.documentDirectory;
+    if (!documentDirectory) {
       setError("This device does not have an available download location.");
       return;
     }
 
     const filenameVersion = update.version.replace(/[^\w.-]/g, "_");
-    const apkUri = `${cacheDirectory}moviesflix-update-${filenameVersion}.apk`;
+    const apkUri = documentDirectory + "moviesflix-update-" + filenameVersion + ".apk";
     setIsDownloading(true);
     setProgress(0);
 

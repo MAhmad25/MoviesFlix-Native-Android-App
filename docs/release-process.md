@@ -7,7 +7,7 @@ In the GitHub repository `MAhmad25/MoviesFlix-Native-Android-App`, add these Act
 - `EXPO_TOKEN`: an Expo access token for the account that owns EAS project `21887552-2feb-4411-b68d-7c03878ccacc`.
 - `RELEASES_TOKEN`: a fine-grained GitHub token with **Contents: read and write** access to `MAhmad25/TheMoviesFlix-Streaming-Platform`. The workflow mirrors APK releases there because already-installed app versions check that repository for updates.
 
-In Expo's project environment settings, define `EXPO_PUBLIC_TMDB_BASE_URL` and `EXPO_PUBLIC_TMDB_KEY` for both the **preview** and **production** environments; the cloud build cannot read this machine's ignored `.env` file.
+In Expo's project environment settings, define `EXPO_PUBLIC_TMDB_KEY` as a **sensitive** variable for both the **preview** and **production** environments. `EXPO_PUBLIC_TMDB_BASE_URL` is optional because the app defaults to TMDB's API URL. The cloud build cannot read this machine's ignored `.env` file. EAS builds now stop before installing dependencies if the matching environment does not contain the TMDB key.
 
 Before the first automated production build, confirm the Android signing credentials in EAS are the same keystore used to sign the APK already in users' hands. Keep the Android package name `com.ahmad123dev.moviesflixnative` unchanged. A different signing key or package ID prevents Android from installing an update over the existing app.
 

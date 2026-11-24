@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "eas-build-pre-install": "node scripts/check-eas-env.mjs",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
